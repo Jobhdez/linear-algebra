@@ -1,5 +1,6 @@
 # linear-algebra
 
+<<<<<<< HEAD
 My goal is to implement a lot of linear algebra and see If ends up in a library. Another possibility is to write a simple interpreter and allow users to express their solutions using a linear algebra type mini language.
 
 ## How to run
@@ -7,3 +8,8 @@ Install Common Lisp. I am using `sbcl`.  You will need `quicklisp` so install th
 
 Once you have done this, to run the tests you do: `(in-package :linear-algebra-tests)` and then `(run-package-tests)`.
 
+=======
+I intending to make this a library or into a programming language.
+
+The funtion MINOR is the the only one tested so far.
+>>>>>>> 3be9514179489563928a7b1ff6a1dc78745907cf
