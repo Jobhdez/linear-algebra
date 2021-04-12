@@ -5,7 +5,9 @@
   (:use #:common-lisp)
   (:export #:determinant
 	   #:minor
-	   #:cofactor))
+	   #:cofactor
+	   #:compute-trace
+	   #:tref))
 
 (in-package #:linear-algebra)
 
@@ -36,6 +38,14 @@
 			 (+ column 1)))))
     (determinant! row1 matrix 1)))
 
+(defun compute-trace (matrix)
+  "Computes the sum of the diagonal elements(ie trace) of the matrix."
+  ;; Matrix -> Sum
+  ;; given: (trace '((2 3 4) (6 8 9) (1 10 12)))
+  ;; expect: 22
+  (loop for i from 1 to (length (car matrix))
+	sum (tref matrix i i)))
+
 (defun cofactor (matrix row column)
   "Computes the cofactor from the minor of the matrix at Aij."
   ;; Matrix Row Counter
@@ -63,6 +73,14 @@
   (minor! (removerow matrix row)
 	  column))
 
+(defun tref (matrix i j)
+  "Gets the element in row i and column j in the matrix."
+  ;; Matrix Number Number -> Number
+  ;; given: (tref '((3 4) (4 5) (6 7)) 3 2)
+  ;; 7
+  (let ((row (getrow matrix i)))
+    (getcolumn row j)))
+
 (defun getrow (matrix row)
   "Gets the row, specified by 'row', from the a given matrix."
   ;; Matrix row -> row
@@ -74,6 +92,13 @@
       (getrowiter (cdr matrix) row (+ counter 1))))
   (getrowiter matrix row 1))
 
+(defun getcolumn (vector column)
+  (defun getcolumniter (vector column counter)
+    (if (= counter column)
+	(car vector)
+      (getcolumniter (cdr vector) column (+ counter 1))))
+  (getcolumniter vector column 1))
+    
 (defun removerow (matrix row)
   (removerowiter matrix row 1))
 
@@ -95,19 +120,30 @@
 	  (removecoliter (cdr vec)
 			 col
 			 (+ counter 1)))))
+  
 	     		   
 (fiasco:define-test-package #:linear-algebra-tests
 			    (:use #:linear-algebra))
 (in-package #:linear-algebra-tests)
 
 (deftest test-determinant ()
+  "Test if DETERMINANT works."
   (is (equal (determinant '((1 -5 2) (7 3 4) (2 1 5)) 1)
 	     148)))
 
 (deftest test-minor ()
+  "Test if MINOR works."
   (is (equal (minor '((2 3 4) (5 6 7) (8 9 10)) 2 1)
 	     '((3 4) (9 10)))))
 
 (deftest test-cofactor ()
+  "Test if COFACTOR works."
   (is (equal (cofactor '((2 3 4) (5 6 7) (8 9 10)) 2 1) 6)))
-      
+
+(deftest test-tref ()
+  "Test if TREF works."
+  (is (equal (tref '((3 4) (4 5) (6 7)) 3 2) 7)))
+
+(deftest test-trace ()
+  "Test if COMPUTE-TRACE works."
+  (is (equal (compute-trace '((2 3 4) (6 8 9) (1 10 12))) 22)))
