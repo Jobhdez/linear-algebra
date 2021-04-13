@@ -8,7 +8,8 @@
 	   #:cofactor
 	   #:compute-trace
 	   #:tref
-	   #:upper-triangular))
+	   #:upper-triangular
+	   #:lower-triangular))
 
 (in-package #:linear-algebra)
 
@@ -68,7 +69,29 @@
   
   (upper! matrix 0))
   
-
+(defun lower-triangular (matrix)
+  "Computes the lower-triangular of a given matrix."
+  ;; Matrix -> Matrix
+  ;; given: (lower-triangular '((2 3 4) (5 6 7) (8 9 10)))
+  ;; expect: '((2 0 0) (5 6 0) (8 9 10))
+  (defun lower! (matrix i)
+    "Helps LOWER-TRIANGULAR -- it computes lower-triangular."
+    (if (null matrix)
+	'()
+      (cons (reverse (fill-with-zeros
+		      (reverse (car matrix))
+		      i))
+	    (lower! (cdr matrix) (1- i)))))
+  
+  (defun fill-with-zeros (vec n)
+    "Replaces n elements in vec with n zeros."
+    (cond ((= n -1) vec)
+	  ((= n 0) vec)
+	  (t (cons 0
+		   (fill-with-zeros (cdr vec) (1- n))))))
+  
+  (lower! matrix (- (length (car matrix)) 1)))
+	    
 (defun cofactor (matrix row column)
   "Computes the cofactor from the minor of the matrix at Aij."
   ;; Matrix Row Counter
@@ -116,6 +139,7 @@
   (getrowiter matrix row 1))
 
 (defun getcolumn (vector column)
+  "Gets the column from vector."
   (defun getcolumniter (vector column counter)
     (if (= counter column)
 	(car vector)
@@ -123,9 +147,11 @@
   (getcolumniter vector column 1))
     
 (defun removerow (matrix row)
+  "Removes the given row from the matrix."
   (removerowiter matrix row 1))
 
 (defun removerowiter (matrix row counter)
+  "Iterator for REMOVEROW."
   (if (= counter row)
       (cdr matrix)
     (cons (car matrix)
@@ -134,9 +160,11 @@
 			 (+ 1 counter)))))
 
 (defun removecol (vec col)
+  "Removes the column from a vector."
   (removecoliter vec col 1))
 
 (defun removecoliter (vec col counter)
+  "Iterator for REMOVECOL."
   (if (= counter col)
       (cdr vec)
     (cons (car vec)
@@ -175,3 +203,28 @@
   "Test if UPPER-TRIANGULAR works."
   (is (equal (upper-triangular '((2 3 4) (5 6 7) (8 9 10)))
 	     '((2 3 4) (0 6 7) (0 0 10)))))
+
+(deftest test-2-upper-triangular ()
+  "Test if UPPER-TRIANGULAR works on a 4 by 3 matrix."
+  (is (equal (upper-triangular '((2 3 4) (5 6 7) (8 9 10) (11 12 12)))
+	     '((2 3 4) (0 6 7) (0 0 10) (0 0 0)))))
+
+(deftest test-3-upper-triangular ()
+  "Test if UPPER-TRIANGULAR  works on a 3 by 4 matrix."
+  (is (equal (upper-triangular '((3 4 5 6) (7 8 9 10) (11 12 13 14)))
+	     '((3 4 5 6) (0 8 9 10) (0 0 13 14)))))
+
+(deftest test-lower-triangular ()
+  "Test if LOWER-TRIANGULAR works on a square matrix."
+  (is (equal (lower-triangular '((2 3 4) (5 6 7) (8 9 10)))
+	     '((2 0 0) (5 6 0) (8 9 10)))))
+
+(deftest test-2-lower-triangular ()
+  "Test if LOWER-TRIANGULAR works on a 4 by 3 matrix."
+  (is (equal (lower-triangular '((2 3 4) (5 6 7) (8 9 10) (11 12 13)))
+	     '((2 0 0) (5 6 0) (8 9 10) (11 12 13)))))
+
+(deftest test-3-lower-triangular ()
+  "Test if LOWER-TRIANGULAR works on a 3 by 4 matrix."
+  (is (equal (lower-triangular '((2 3 4 5) (6 7 8 9) (10 11 12 13)))
+	     '((2 0 0 0) (6 7 0 0) (10 11 12 0)))))
