@@ -7,7 +7,8 @@
 	   #:minor
 	   #:cofactor
 	   #:compute-trace
-	   #:tref))
+	   #:tref
+	   #:upper-triangular))
 
 (in-package #:linear-algebra)
 
@@ -45,6 +46,28 @@
   ;; expect: 22
   (loop for i from 1 to (length (car matrix))
 	sum (tref matrix i i)))
+
+(defun upper-triangular (matrix)
+  "Computes the upper triangular of a given matrix."
+  ;; Matrix -> Matrix
+  ;; given: (upper-triangular '((2 3 4) (5 6 7) (8 9 10)))
+  ;; expect: '((2 3 4) (0 6 7) (0 0 10))
+  (defun upper! (matrix i)
+    "Helps UPPER-TRIANGULAR -- it computes the upper-triangular."
+    (if (null matrix)
+	'()
+      (cons (fill-with-zeros (car matrix) i)
+	    (upper! (cdr matrix) (1+ i)))))
+  
+  (defun fill-with-zeros (vec n)
+    "Replaces the n elements in vec with n zeros."
+    (cond ((= n 0) vec)
+	  ((= n 1) (cons 0 (cdr vec)))
+	  (t (cons 0
+		   (fill-with-zeros (cdr vec) (1- n))))))
+  
+  (upper! matrix 0))
+  
 
 (defun cofactor (matrix row column)
   "Computes the cofactor from the minor of the matrix at Aij."
@@ -147,3 +170,8 @@
 (deftest test-trace ()
   "Test if COMPUTE-TRACE works."
   (is (equal (compute-trace '((2 3 4) (6 8 9) (1 10 12))) 22)))
+
+(deftest test-upper-triangular ()
+  "Test if UPPER-TRIANGULAR works."
+  (is (equal (upper-triangular '((2 3 4) (5 6 7) (8 9 10)))
+	     '((2 3 4) (0 6 7) (0 0 10)))))
