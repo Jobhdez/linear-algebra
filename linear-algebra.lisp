@@ -9,7 +9,8 @@
 	   #:compute-trace
 	   #:tref
 	   #:upper-triangular
-	   #:lower-triangular))
+	   #:lower-triangular
+	   #:transpose))
 
 (in-package #:linear-algebra)
 
@@ -91,7 +92,26 @@
 		   (fill-with-zeros (cdr vec) (1- n))))))
   
   (lower! matrix (- (length (car matrix)) 1)))
-	    
+
+(defun transpose (matrix)
+  "Computes the transpose of the matrix."
+  ;; Matrix -> Matrix
+  ;; given: (transpose '((2 3 4) (5 6 7)))
+  ;; expect: '((2 5) (3 6) (4 7))
+  (defun getfirst (matrix)
+    (mapcar #'car matrix))
+  (defun getcdr (matrix)
+    (mapcar #'cdr matrix))
+  (defun null-matrixp (matrix)
+    (if (null matrix)
+	T
+      (and (null (car matrix))
+	   (null-matrixp (cdr matrix)))))
+  (if (null-matrixp matrix)
+      '()
+    (cons (getfirst matrix)
+	  (transpose (getcdr matrix)))))
+
 (defun cofactor (matrix row column)
   "Computes the cofactor from the minor of the matrix at Aij."
   ;; Matrix Row Counter
@@ -228,3 +248,7 @@
   "Test if LOWER-TRIANGULAR works on a 3 by 4 matrix."
   (is (equal (lower-triangular '((2 3 4 5) (6 7 8 9) (10 11 12 13)))
 	     '((2 0 0 0) (6 7 0 0) (10 11 12 0)))))
+
+(deftest test-transpose ()
+  "Test if TRANSPOSE works."
+  (is (equal (transpose '((2 3 4) (5 6 7))) '((2 5) (3 6) (4 7)))))
