@@ -10,7 +10,9 @@
 	   #:tref
 	   #:upper-triangular
 	   #:lower-triangular
-	   #:transpose))
+	   #:transpose
+	   #:inverse
+	   #:make-matrix-of-minors))
 
 (in-package #:linear-algebra)
 
@@ -112,6 +114,16 @@
     (cons (getfirst matrix)
 	  (transpose (getcdr matrix)))))
 
+(defun inverse (matrix)
+  "Computes the inverse of the given matrix."
+  ;; Matrix -> Matrix
+  ;; given: (inverse '((-1 -2 2) (2 1 1) (3 4 5)))
+  ;; expect: `((1/23 18/23 -4/23) (-7/23 -11/23, 5/23), (5/23, -2/23 3/23))
+  (let* ((minors (make-matrix-of-minors matrix 1 1))
+         (det (determinant matrix 1))
+         (adjugate (transpose minors)))
+    (multiply-by-scalar (/ 1 det) adjugate)))
+
 (defun cofactor (matrix row column)
   "Computes the cofactor from the minor of the matrix at Aij."
   ;; Matrix Row Counter
@@ -138,6 +150,22 @@
 		    col))))
   (minor! (removerow matrix row)
 	  column))
+
+(defun make-matrix-of-minors (matrix row column)
+  "Makes a matrix comprised of cofactors with respect to each element in
+   the matrix."
+  (if (> row (length matrix))
+      '()
+    (cons (minor-of-row matrix row column)
+	  (make-matrix-of-minors matrix (1+ row) column))))
+
+(defun minor-of-row (matrix row column)
+  "Takes a vector of the matrix(eg '(2 3 4)) and computes the cofactor with
+   respect to the given matrix of each element in the vector."
+  (if (> column (length (car matrix)))
+      '()
+    (cons (cofactor matrix row column)
+	  (minor-of-row matrix row (1+ column)))))
 
 (defun tref (matrix i j)
   "Gets the element in row i and column j in the matrix."
@@ -191,7 +219,17 @@
 	  (removecoliter (cdr vec)
 			 col
 			 (+ counter 1)))))
-  
+
+(defun multiply-by-scalar (scalar matrix)
+  "Multiplies a scalar by a matrix."
+  (defun row-by-scalar (row)
+    (loop
+     for i in row
+     collect (* i scalar)))
+  (loop
+   for i in matrix
+   collect (row-by-scalar i)))
+
 	     		   
 (fiasco:define-test-package #:linear-algebra-tests
 			    (:use #:linear-algebra))
@@ -252,3 +290,14 @@
 (deftest test-transpose ()
   "Test if TRANSPOSE works."
   (is (equal (transpose '((2 3 4) (5 6 7))) '((2 5) (3 6) (4 7)))))
+
+(deftest test-make-matrix-of-minors ()
+  "Test if MAKE-MATRIX-OF-MINORS works."
+  (is (equal (make-matrix-of-minors '((-1 -2 2) (2 1 1) (3 4 5)) 1 1)
+	     '((1 -7 5) (18 -11 -2) (-4 5 3)))))
+
+(deftest test-inverse ()
+  "Test if INVERSE works."
+  (is (equal (inverse '((-1 -2 2) (2 1 1) (3 4 5)))
+	     '((1/23 18/23 -4/23) (-7/23 -11/23 5/23) (5/23 -2/23 3/23)))))
+	     
