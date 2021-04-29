@@ -12,10 +12,166 @@
 	   #:lower-triangular
 	   #:transpose
 	   #:inverse
-	   #:make-matrix-of-minors))
+	   #:make-matrix-of-minors
+	   #:make-matrice!
+	   #:get-matrix
+	   #:multiply-matrices
+	   #:add-matrices
+	   #:multiply-by-scalar))
 
 (in-package #:linear-algebra)
 
+(defstruct matrix
+  "A Matrix is a structure: (make-matrix row column contents)."
+  rows
+  columns
+  contents)
+
+(defun get-rows (m)
+  "Given a Matrix structure it gets the number of rows."
+  ;; Matrix -> Number
+  (matrix-rows m))
+
+(defun get-columns (m)
+  "Given a Matrix structure it returns the number of columns."
+  ;; Matrix -> Number
+  (matrix-columns m))
+
+(defun get-matrix (m)
+  "Given a Matrix structure it returns a List representing the contents of the structure."
+  ;; Matrix -> List
+  (matrix-contents m))
+
+(defun make-matrice! (rows columns contents)
+  "It takes the number of rows, and number of columns, and the contents, and it 
+   returns a Matrix structure."
+  ;; Number Number List -> Structure
+  (make-matrix :rows rows
+	       :columns columns
+	       :contents contents))
+
+(defun add-matrices (m m2)
+  "Takes two Matrix structures and returns a Matrix structure whose contents represent 
+   the addition of the contents of m and m2."
+  ;; Structure Structure -> Structure
+  (let ((m* (get-matrix m))
+	(m2* (get-matrix m2)))
+    (make-matrice! (get-rows m)
+		   (get-columns m2)
+		   (compute m* #'+ m2*))))
+
+(defun subtract-matrices (m m2)
+  "Takes two Matrix structures and returns a Matrix structure whose contents represent 
+   the subtraction of the contents of the matrix structures m and m2."
+  ;; Structure Structure -> Structure
+  (let ((m* (get-matrix m))
+	(m2* (get-matrix m2)))
+    (make-matrice! (get-rows m)
+		   (get-columns m)
+		   (compute m* #'- m2*))))
+
+(defun compute (m op m2)
+  "Takes the contents of two Matrix structures and applies computation to them."
+  ;; List Symbol List -> List
+  (loop for i in m
+	for j in m2
+	collect (compute! op i j)))
+
+(defun compute! (op v v2)
+  "Takes an operator and applies it to two vectors."
+  ;; Symbol List List -> List
+  (loop for i in v
+	for j in v2
+	collect (funcall op i j)))
+
+(defun multiply-by-scalar (scalar matrix)
+  "Multiplies a scalar by a matrix."
+  (defun row-by-scalar (row)
+    (loop
+     for i in row
+     collect (* i scalar)))
+  (loop for i in matrix
+        collect (row-by-scalar i)))
+
+(defun multiply-matrices (m m2)
+  "Multiplies two matrices."
+  ;; Structure Structure -> Structure
+  (let ((m* (get-matrix m))
+	(m2* (get-matrix m2)))
+    (make-matrice! 2 2 (multiply-ms m* m2*))))
+
+(defun multiply-ms (m m2)
+  "Does the actual multiplication(of the contents of two Matrix structures) of 
+   MULTIPLY-MATRICES."
+  ;; List List -> List
+  (if (null m)
+     '()
+    (cons (compute-entry m m2)
+	  (multiply-ms (cdr m) m2))))
+
+(defun compute-entry (m m2)
+  "Computes an entry of a new matrix."
+  ;; List List -> List
+  (if (nullmatrix m2)
+      '()
+    (cons (add-entries (multiply-vectors (first-row m)
+					 (first-column m2)))
+	  (compute-entry m (getcdr m2)))))
+
+(defun multiply-vectors (v v2)
+  "Multiplies two vectors."
+  (loop for i in v
+	for j in v2
+	collect (* i j)))
+
+(defun nullmatrix (m)
+  "Checks if the matrix is null."
+  ;; List -> Bool
+  (if (null m)
+      T
+    (and (null (car m))
+	 (nullmatrix (cdr m)))))
+	       
+(defun first-row (m)
+  "Gets the first row of the matrix."
+  ;; Matrix -> Vector
+  (car m))
+
+(defun first-column (m)
+  "Gets the first column of a matrix(ie contents of a Matrix structure)."
+  ;; Matrix -> List
+  (mapcar #'car m))
+
+(defun getcdr (m)
+  "Gets the rest of the columns."
+  ;; Matrix -> Matrix
+  (mapcar #'cdr m))
+
+(defun get-row (m)
+  "Gets the row of a matrix."
+  ;; Matrix -> Vector
+  (car m))
+
+(defun get-column (m)
+  "Gets the first column of the matrix."
+  ;; Matrix -> Vector
+  (mapcar #'car m))
+
+(defun add-entries (v)
+  "Adds the entries in a vector."
+  ;; Vector -> Number
+  (if (null v)
+      0
+    (+ (first-entry v) (add-entries (rest-entries v)))))
+
+(defun first-entry (v)
+  "Get the first entry of the vector."
+  ;; Vector -> Number
+  (car v))
+
+(defun rest-entries (v)
+  "Get the rest of the vector(ie minus the first entry)."
+  (cdr v))
 
 ;; the Determinant whose elements are aij is denoted
 ;; |aij|
@@ -220,17 +376,6 @@
 			 col
 			 (+ counter 1)))))
 
-(defun multiply-by-scalar (scalar matrix)
-  "Multiplies a scalar by a matrix."
-  (defun row-by-scalar (row)
-    (loop
-     for i in row
-     collect (* i scalar)))
-  (loop
-   for i in matrix
-   collect (row-by-scalar i)))
-
-	     		   
 (fiasco:define-test-package #:linear-algebra-tests
 			    (:use #:linear-algebra))
 (in-package #:linear-algebra-tests)
@@ -300,4 +445,20 @@
   "Test if INVERSE works."
   (is (equal (inverse '((-1 -2 2) (2 1 1) (3 4 5)))
 	     '((1/23 18/23 -4/23) (-7/23 -11/23 5/23) (5/23 -2/23 3/23)))))
-	     
+
+(deftest test-add-matrices ()
+  "Test if ADD-MATRICES work."
+  (is (equal (get-matrix (add-matrices (make-matrice! 2 3 '((1 2 3) (4 5 6)))
+				       (make-matrice! 2 3 '((1 2 3) (4 5 6)))))
+	     '((2 4 6) (8 10 12)))))
+
+(deftest test-mul-matrices ()
+  "Test if MULTIPLY-MATRICES work."
+  (is (equal (get-matrix (multiply-matrices (make-matrice! 2 3 '((1 2 3) (4 5 6)))
+					     (make-matrice! 2 3 '((7 8) (9 10) (11 12)))))
+	     '((58 64) (139 154)))))
+
+(deftest test-matrix-by-scalar ()
+  "Test if MULTIPLY-BY-SCALAR works."
+  (is (equal (multiply-by-scalar 5 '((2 3 4) (5 6 7)))
+	     '((10 15 20) (25 30 35)))))
