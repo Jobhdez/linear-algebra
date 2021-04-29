@@ -1,7 +1,7 @@
 # linear-algebra
 
 ## Goal
-My goal is to implement a lot of linear algebra and see if it ends up as a library. Another possibility is to write a simple interpreter and allow users to express their solutions using a linear algebra type mini language.
+I have implemented some matrix algebra.
 
 ## How to run
 Install Common Lisp. I am using `sbcl`.  You will need `quicklisp` so install this too. Finally, when you have installed the above you need to load the test suite `fiasco`(ie `(ql:quickload :fiasco)`) and load the file ie `(load "linear-algebra.lisp")`.
