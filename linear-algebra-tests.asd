@@ -6,7 +6,7 @@
 		:license "MIT License (see LICENSE.txt)"
 		:description "Tests for Linear Algebra."
 		:author "Job Hernandez"
-		:version "1.0"
+		:version (:read-file-form "VERSION.txt")
 		:depends-on (#:linear-algebra
 			     #:fiasco)
 		:perform (asdf:test-op (o s)
