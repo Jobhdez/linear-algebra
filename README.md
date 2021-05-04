@@ -1,7 +1,7 @@
 # linear-algebra
 
-## Goal
-I have implemented some matrix algebra.
+## OVERVIEW
+I have implemented some not very efficient matrix algebra.
 
 # How to run
 load the system with `(asdf:load-system :linear-algebra)` and run the tests with `(asdf:test-system :linear-algebra-tests)`.
