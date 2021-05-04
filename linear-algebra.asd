@@ -1,7 +1,7 @@
 (asdf:defsystem #:linear-algebra
 		:description "Some Linear Algebra."
 		:author "Job Hernandez <hj93@protonmail.com>"
-		:version "1.0"
+		:version (:read-file-form "VERSION.txt")
 		:license "MIT License (see LICENSE.txt)"
 		:in-order-to ((asdf:test-op (asdf:test-op #:linear-algebra-tests)))
 		:around-compile (lambda (compile)
