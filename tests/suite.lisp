@@ -5,7 +5,7 @@
 (in-package #:linear-algebra-tests)
 
 (defun run-linear-algebra-tests (&key (verbose nil) (headless nil))
-  "Run all DEEPMATH tests"
+  "Run all LINEAR ALGEBRA tests."
   (setf fiasco::*tests-run-standard-output* (make-broadcast-stream
 					     *standard-output*))
   (cond
