@@ -41,7 +41,7 @@
 	(m2* (get-matrix m2)))
     (make-matrice! (get-rows m)
 		   (get-columns m2)
-		   (compute m* #'+ m2*))))
+		   (compute m* m2* #'+))))
 
 (defun subtract-matrices (m m2)
   "Takes two Matrix structures and returns a Matrix structure whose contents represent 
@@ -51,30 +51,16 @@
 	(m2* (get-matrix m2)))
     (make-matrice! (get-rows m)
 		   (get-columns m)
-		   (compute m* #'- m2*))))
+		   (compute m* m2* #'-))))
 
-(defun compute (m op m2)
-  "Takes the contents of two Matrix structures and applies computation to them."
-  ;; List Symbol List -> List
-  (loop for i in m
-	for j in m2
-	collect (compute! op i j)))
-
-(defun compute! (op v v2)
-  "Takes an operator and applies it to two vectors."
-  ;; Symbol List List -> List
-  (loop for i in v
-	for j in v2
-	collect (funcall op i j)))
+(defun compute (m m2 op)
+  (my-zip m m2 op))
 
 (defun multiply-by-scalar (scalar matrix)
   "Multiplies a scalar by a matrix."
   (defun row-by-scalar (row)
-    (loop
-     for i in row
-     collect (* i scalar)))
-  (loop for i in matrix
-        collect (row-by-scalar i)))
+    (mapcar #'(lambda (x) (* scalar x)) row))
+  (mapcar #'row-by-scalar matrix))
 
 (defun multiply-matrices (m m2)
   "Multiplies two matrices."
