@@ -13,4 +13,5 @@
 		((:file "packages")
 		 (:module "linear-algebra"
 			  :serial t
-			  :components ((:file "matrix")))))
+			  :components ((:file "utils")
+				       (:file "matrix" :depends-on ("utils"))))))
