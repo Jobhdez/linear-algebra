@@ -14,4 +14,5 @@
 	   #:get-matrix
 	   #:multiply-matrices
 	   #:add-matrices
-	   #:multiply-by-scalar))
+	   #:multiply-by-scalar
+	   #:zip))
